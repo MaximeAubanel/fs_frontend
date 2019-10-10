@@ -73,6 +73,12 @@ const PlayerListRow = styled.li`
 	justify-content: space-between;
 `;
 
+const STATUS = {
+    IDLE: "IDLE",
+    READY: "READY",
+    PLAYING: "PLAYING"
+}
+
 const STATE_CONNECTING = 0;
 const STATE_CONNECTED = 1;
 const STATE_ERROR = 2;
@@ -83,34 +89,34 @@ class GameRoomPage extends React.Component {
 		this.room = this.props.match.params["roomId"];
 		this.state = {
 			users: [],
-			isGameRunning: false,
-			isReady: false,
-			room_state: STATE_CONNECTING
+			status: STATUS.IDLE,
+			room_state: STATE_CONNECTING,
+			room_status: STATUS.IDLE
 		};
 		this.socket = null;
 	}
 
 	componentDidMount() {
 		this.socket = io(WS_ROOT);
-		this.socket.emit("LOGIN_REQUEST", {
+		this.socket.emit("LOGIN", {
 			username: this.props.username,
 			password: this.props.password,
 			token: this.props.token
 		})
 
-		this.socket.emit("JOIN_ROOM_REQUEST", this.room)
+		this.socket.emit("JOIN_ROOM", this.room)
 
-		this.socket.on("UPDATE_ROOM_STATE", data => {
-			var isReady = this.state.isReady
+		this.socket.on("UPDATE_ROOM", data => {
+			var status = this.state.status
 
 			data.users.forEach(user => {
-				if (user.username === this.props.username) isReady = user.isReady
+				if (user.username === this.props.username) status = user.status
 			});
 			this.setState({
 				users: data.users,
-				isGameRunning: data.isGameRunning,
 				room_state: STATE_CONNECTED,
-				isReady: isReady
+				status: status,
+				room_status: data.status
 			})
 		});
 
@@ -122,7 +128,7 @@ class GameRoomPage extends React.Component {
 	}
 
 	componentWillUnmount() {
-		this.socket.emit("LEAVE_ROOM_REQUEST", this.room)
+		this.socket.emit("LEAVE_ROOM", this.room)
 	}
 
 	_addToLimitedQueue = str => {
@@ -131,10 +137,7 @@ class GameRoomPage extends React.Component {
 
 	_setReady = () => {
 		try {
-			this.socket.emit("GAME__TOGGLE_READY", {
-				token: this.props.token,
-				isReady: !this.state.isReady
-			});
+			this.socket.emit("TOGGLE_READY", !(this.state.status === STATUS.READY))
 		} catch (e) {
 			console.error("Error connecting to room");
 		}
@@ -156,7 +159,7 @@ class GameRoomPage extends React.Component {
 								{this.state.users.map(player => (
 									<PlayerListRow key={player.gameId}>
 										<span>{player.username}</span>
-										<span>{player.isReady === true ? "Ready" : ""}</span>
+										<span>{player.status === STATUS.READY ? "Ready" : ""}</span>
 									</PlayerListRow>
 								))}
 							</PlayerList>
@@ -165,13 +168,13 @@ class GameRoomPage extends React.Component {
 
 					<Spacer />
 						<Button onClick={this._setReady}>
-							{this.state.isReady ? ("Waiting ...") : ("I'm ready !")}
+							{this.state.status === STATUS.READY ? ("Waiting ...") : ("I'm ready !")}
 						</Button>
 
 				</SidePanel>
 
 				<GameFrame>
-					{this.state.isGameRunning && <GameRenderer token={this.props.token} socket={this.socket} />}
+					{this.state.room_status === STATUS.PLAYING && <GameRenderer token={this.props.token} socket={this.socket} />}
 				</GameFrame>
 			</Content>
 		);
