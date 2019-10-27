@@ -2,6 +2,7 @@ import React from 'react';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
 import io from 'socket.io-client';
+import { withTranslation } from 'react-i18next';
 // providers
 import { withUser } from '../providers/UserProvider';
 // components
@@ -75,44 +76,39 @@ class HomePage extends React.Component {
     });
   }
   render() {
+    console.log(this.props);
     return (
       <Content>
         <Title>Skible</Title>
         {this.props.isLogged ? (
           <>
-            <SubTitle>Join room</SubTitle>
+            <SubTitle>{this.props.t('room.join')}</SubTitle>
             {this.state.rooms.length > 0 ? (
               <List>
                 {this.state.rooms.map(room => (
                   <li key={room.name}>
                     <span>{`#${room.name} (${room.userNb} / 10)`}</span>
-                    <StyledLink to={`/room/${room.name}`}>Join</StyledLink>
+                    <StyledLink to={`/room/${room.name}`}>
+                      {this.props.t('common.join')}
+                    </StyledLink>
                   </li>
                 ))}
               </List>
             ) : (
-              <Description>No room existing rooms</Description>
+              <Description>{this.props.t('room.empty')}</Description>
             )}
-            <Spacer>OR</Spacer>
-            <SubTitle>Create room</SubTitle>
+            <Spacer>{this.props.t('common.or')}</Spacer>
+            <SubTitle>{this.props.t('room.create')}</SubTitle>
             <SingleFieldForm
-              placeholder="Room name..."
+              placeholder={this.props.t('room.name')}
               onSubmit={value => this.props.history.push(`/room/${value}`)}
             />
           </>
         ) : (
           <>
-            <Description>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-              reprehenderit in voluptate velit esse cillum dolore eu fugiat
-              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-              sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </Description>
+            <Description>{this.props.t('home_desc')}</Description>
             <Button onClick={() => this.props.history.push(SIGNIN_ROUTE)}>
-              Sign In
+              {this.props.t('account.sign_in')}
             </Button>
           </>
         )}
@@ -122,4 +118,4 @@ class HomePage extends React.Component {
   }
 }
 
-export default withRouter(withUser(HomePage));
+export default withTranslation()(withRouter(withUser(HomePage)));

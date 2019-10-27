@@ -9,6 +9,8 @@ import GameRenderer from '../components/GameRenderer';
 import Button from '../components/Button';
 import { WS_ROOT } from '../constants/api';
 import { withUser } from '../providers/UserProvider';
+import { withTranslation } from 'react-i18next';
+
 import { SERVER_EVENT, CLIENT_EVENT } from '../constants/events';
 
 const Content = styled.div`
@@ -149,7 +151,11 @@ class GameRoomPage extends React.Component {
                 {this.state.users.map(player => (
                   <li key={player.gameId}>
                     <span>{player.username}</span>
-                    <span>{player.status === STATUS.READY ? 'Ready' : ''}</span>
+                    <span>
+                      {player.status === STATUS.READY
+                        ? this.props.t('game.ready')
+                        : ''}
+                    </span>
                   </li>
                 ))}
               </List>
@@ -158,7 +164,9 @@ class GameRoomPage extends React.Component {
 
           <Spacer />
           <Button onClick={this._setReady}>
-            {this.state.status === STATUS.READY ? 'Waiting ...' : "I'm ready !"}
+            {this.state.status === STATUS.READY
+              ? this.props.t('game.waiting')
+              : this.props.t('game.am_ready')}
           </Button>
         </SidePanel>
 
@@ -172,4 +180,6 @@ class GameRoomPage extends React.Component {
   }
 }
 
-export default GameRoomPage = withRouter(withUser(GameRoomPage));
+export default GameRoomPage = withTranslation()(
+  withRouter(withUser(GameRoomPage))
+);
