@@ -8,6 +8,7 @@ import { SIGNUP_ROUTE } from '../constants/routes';
 import { withRouter } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { withUser } from '../providers/UserProvider';
+import { withTranslation } from 'react-i18next';
 
 const Content = styled.div`
   width: 25em;
@@ -65,7 +66,7 @@ class SignInPage extends React.Component {
         <Title>Sign In</Title>
         <Spacer />
         <Form onSubmit={this._handleFormSubmit}>
-          <label htmlFor="username">Username</label>
+          <label htmlFor="username">{this.props.t('account.username')}</label>
           <input
             name="username"
             type="text"
@@ -83,17 +84,19 @@ class SignInPage extends React.Component {
           />
           <Spacer />
 
-          <Button>Sign in</Button>
+          <Button>{this.props.t('account.sign_in')}</Button>
         </Form>
         <Spacer />
 
         <Spacer>
           Don't have an account?&nbsp;
-          <StyledLink to={SIGNUP_ROUTE}>Sign up</StyledLink>
+          <StyledLink to={SIGNUP_ROUTE}>
+            {this.props.t('account.sign_in')}
+          </StyledLink>
         </Spacer>
       </Content>
     );
   }
 }
 
-export default withRouter(withUser(SignInPage));
+export default withTranslation()(withRouter(withUser(SignInPage)));
